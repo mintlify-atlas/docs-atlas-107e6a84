@@ -1,133 +1,67 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
-icon: 'star'
+title: "ActivityWatch: Free Open-Source Time Tracker"
+description: "ActivityWatch automatically tracks how you spend your time across apps, windows, and browser tabs — all stored locally, never in the cloud."
 ---
 
-## Setting up
+ActivityWatch is a free, open-source, privacy-first time tracker that runs entirely on your machine. It automatically records your active application, window title, browser tab, and AFK (away-from-keyboard) status — giving you a complete picture of how you spend your time without sending any data to external servers.
 
-Get your documentation site up and running in minutes.
-
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Get Started" icon="rocket" href="/getting-started">
+    Download ActivityWatch and start tracking your time in minutes
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Installation" icon="download" href="/installation">
+    Install from a release package or build from source on any platform
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Dashboard & Reports" icon="chart-bar" href="/usage/dashboard">
+    Explore your activity data with timelines, summaries, and category breakdowns
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="Watchers" icon="eye" href="/usage/watchers">
+    Discover all available trackers for apps, browsers, editors, and more
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## How ActivityWatch works
 
-Everything you need to create world-class documentation.
+ActivityWatch consists of a local server, a set of watchers that collect data, and a web UI for exploring your activity. All data is stored on your machine.
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+<Steps>
+  <Step title="Install ActivityWatch">
+    Download the latest release for your platform (Windows, macOS, or Linux) and run the installer. ActivityWatch starts a local server on port 5600.
+  </Step>
+  <Step title="Watchers collect your activity">
+    Built-in watchers automatically record the active window and application, AFK/idle status, and — with the browser extension — the active browser tab and URL.
+  </Step>
+  <Step title="Explore your data">
+    Open the web dashboard at `http://localhost:5600` to see activity timelines, summaries, and category breakdowns for any time range.
+  </Step>
+  <Step title="Extend and automate">
+    Use the REST API or Python client library to build custom watchers, export data, or integrate ActivityWatch with other tools.
+  </Step>
+</Steps>
 
-## Make your content agent ready
+## Key features
 
-Make your docs work for humans and AI agents alike.
+<CardGroup cols={2}>
+  <Card title="Privacy-first" icon="shield-halved" href="/privacy">
+    All data lives on your machine. No cloud sync, no accounts required, no data leaves your device.
+  </Card>
+  <Card title="Cross-platform" icon="desktop" href="/installation">
+    Works on Windows, macOS, Linux, and Android. One consistent interface everywhere.
+  </Card>
+  <Card title="Extensible watchers" icon="plug" href="/usage/watchers">
+    Track any activity type — editors, terminals, browsers, meetings — via community or custom watchers.
+  </Card>
+  <Card title="Powerful query engine" icon="magnifying-glass" href="/usage/query">
+    Filter, merge, and transform your event data with the built-in query language.
+  </Card>
+  <Card title="REST API" icon="code" href="/developer/api-overview">
+    Full REST API for programmatic access to all your activity data.
+  </Card>
+  <Card title="Open source (MPL-2.0)" icon="github" href="https://github.com/ActivityWatch/activitywatch">
+    Inspect, modify, and contribute to the source code on GitHub.
+  </Card>
+</CardGroup>
 
-<Columns cols={2}>
-  <Card
-    title="Prompt component"
-    icon="robot"
-    href="/agent-ready/prompt"
-  >
-    Embed shareable AI prompts readers can copy or open in Cursor.
-  </Card>
-  <Card
-    title="Visibility"
-    icon="eye"
-    href="/agent-ready/visibility"
-  >
-    Show different content to humans and agents reading your docs.
-  </Card>
-  <Card
-    title="Contextual menu"
-    icon="bolt"
-    href="/agent-ready/contextual"
-  >
-    Give readers one-click access to Claude, ChatGPT, Cursor, and more.
-  </Card>
-  <Card
-    title="AI coding tools"
-    icon="wand-magic-sparkles"
-    href="/ai-tools/claude-code"
-  >
-    Set up Claude Code, Cursor, or Windsurf with Mintlify's skill.
-  </Card>
-</Columns>
-
-## Need inspiration?
-
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<Note>
+  ActivityWatch is 100% free and open source. If you find it useful, consider [donating](https://activitywatch.net/donate/) to support development.
+</Note>

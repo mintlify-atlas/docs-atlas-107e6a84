@@ -1,0 +1,99 @@
+---
+title: "Buckets API — Create and Manage Buckets"
+description: "REST API for ActivityWatch buckets — GET /api/0/buckets/ lists all, POST creates one, DELETE removes a bucket and all its events with force=1."
+---
+
+Buckets are named containers that hold events from a single watcher on a single host. Before a watcher can send events, it must create a bucket.
+
+## List all buckets
+
+```
+GET /api/0/buckets/
+```
+
+Returns a JSON object where keys are bucket IDs and values are bucket metadata.
+
+```bash
+curl http://localhost:5600/api/0/buckets/
+```
+
+**Response:**
+```json
+{
+  "aw-watcher-window_my-laptop": {
+    "id": "aw-watcher-window_my-laptop",
+    "type": "currentwindow",
+    "client": "aw-watcher-window",
+    "hostname": "my-laptop",
+    "created": "2024-01-01T00:00:00.000000+00:00",
+    "last_updated": "2024-01-15T09:30:00.000000+00:00"
+  }
+}
+```
+
+## Get a single bucket
+
+```
+GET /api/0/buckets/{bucket_id}
+```
+
+```bash
+curl http://localhost:5600/api/0/buckets/aw-watcher-window_my-laptop
+```
+
+## Create a bucket
+
+```
+POST /api/0/buckets/{bucket_id}
+```
+
+<ParamField path="bucket_id" type="string" required>
+  Unique bucket identifier. Convention: `{watcher-name}_{hostname}`
+</ParamField>
+
+**Request body:**
+
+<ParamField body="client" type="string" required>
+  Name of the client/watcher creating this bucket
+</ParamField>
+
+<ParamField body="type" type="string" required>
+  Event schema type (e.g. `currentwindow`, `afkstatus`, `web.tab.current`)
+</ParamField>
+
+<ParamField body="hostname" type="string" required>
+  Hostname of the machine
+</ParamField>
+
+```bash
+curl -X POST http://localhost:5600/api/0/buckets/my-watcher_my-laptop \
+  -H "Content-Type: application/json" \
+  -d '{"client": "my-watcher", "type": "my-event-type", "hostname": "my-laptop"}'
+```
+
+**Response:** `200 OK` (bucket created or already exists)
+
+## Delete a bucket
+
+```
+DELETE /api/0/buckets/{bucket_id}
+```
+
+<Warning>
+Deleting a bucket permanently removes all events stored in it. This cannot be undone.
+</Warning>
+
+```bash
+curl -X DELETE "http://localhost:5600/api/0/buckets/my-watcher_my-laptop?force=1"
+```
+
+The `force=1` query parameter is required to confirm deletion.
+
+<CardGroup cols={2}>
+  <Card title="Events API" icon="list" href="/developer/api-events">
+    Read, insert, and delete events within a bucket
+  </Card>
+  <Card title="API Overview" icon="code" href="/developer/api-overview">
+    Full endpoint reference and response format details
+  </Card>
+</CardGroup>

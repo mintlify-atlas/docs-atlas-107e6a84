@@ -1,0 +1,118 @@
+---
+title: "ActivityWatch Data Model: Buckets and Events"
+description: "Learn how ActivityWatch structures activity data as timestamped events organized in buckets — the foundation for the REST API and query language."
+---
+
+ActivityWatch organizes all tracked data as **events** stored in **buckets**. Understanding this model is the foundation for working with the REST API, writing watchers, and building queries.
+
+## Events
+
+An event represents a discrete period of activity. Every event has three fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | integer | Auto-assigned unique identifier |
+| `timestamp` | ISO 8601 string | When the event started (UTC) |
+| `duration` | float (seconds) | How long the event lasted |
+| `data` | object | Arbitrary key-value payload specific to the watcher type |
+
+### Example events
+
+Window watcher event:
+```json
+{
+  "id": 1,
+  "timestamp": "2024-01-15T09:30:00.000Z",
+  "duration": 45.2,
+  "data": {
+    "app": "Firefox",
+    "title": "ActivityWatch - GitHub"
+  }
+}
+```
+
+AFK watcher event:
+```json
+{
+  "id": 2,
+  "timestamp": "2024-01-15T09:30:00.000Z",
+  "duration": 45.2,
+  "data": {
+    "status": "not-afk"
+  }
+}
+```
+
+## Buckets
+
+A bucket is a named container for events from a single watcher on a single host. Buckets group related events by their source.
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Unique identifier, e.g. `aw-watcher-window_hostname` |
+| `type` | string | Event schema type, e.g. `currentwindow` |
+| `client` | string | Name of the watcher that created the bucket |
+| `hostname` | string | Machine the bucket's data came from |
+| `created` | ISO 8601 string | When the bucket was created |
+
+### Naming convention
+
+Bucket IDs follow the pattern `{watcher-name}_{hostname}`:
+
+```
+aw-watcher-window_my-laptop
+aw-watcher-afk_my-laptop
+aw-watcher-web-chrome_my-laptop
+```
+
+<Note>
+You can find all your bucket IDs on the **Buckets** page of the dashboard at `http://localhost:5600`, or by calling `GET /api/0/buckets/`.
+</Note>
+
+## Event types
+
+Different watchers produce different `data` schemas:
+
+<AccordionGroup>
+  <Accordion title="currentwindow (aw-watcher-window)">
+    ```json
+    { "app": "string", "title": "string" }
+    ```
+    - `app` — application/process name
+    - `title` — window title
+  </Accordion>
+  <Accordion title="afkstatus (aw-watcher-afk)">
+    ```json
+    { "status": "not-afk" | "afk" }
+    ```
+    - `status` — `"not-afk"` when the user is active, `"afk"` when idle
+  </Accordion>
+  <Accordion title="web.tab.current (aw-watcher-web)">
+    ```json
+    { "url": "string", "title": "string", "audible": boolean, "incognito": boolean }
+    ```
+    - `url` — full URL of the active tab
+    - `title` — page title
+    - `audible` — whether the tab is playing audio
+    - `incognito` — whether the tab is in a private/incognito window
+  </Accordion>
+</AccordionGroup>
+
+## Heartbeat merging
+
+Watchers send heartbeats at a regular interval. If a new heartbeat arrives within `pulsetime` seconds and has identical `data`, the server extends the current event's duration rather than creating a new one. This keeps storage efficient without losing resolution.
+
+```
+heartbeat 1: timestamp=T, data={app: "Firefox"}
+heartbeat 2: timestamp=T+2, data={app: "Firefox"}, pulsetime=5  → extends event 1
+heartbeat 3: timestamp=T+6, data={app: "VSCode"},  pulsetime=5  → creates new event
+```
+
+<CardGroup cols={2}>
+  <Card title="REST API Overview" icon="code" href="/developer/api-overview">
+    Query and manipulate buckets and events via HTTP
+  </Card>
+  <Card title="Writing Watchers" icon="plug" href="/developer/writing-watchers">
+    Use aw-client to send events from your own watcher
+  </Card>
+</CardGroup>

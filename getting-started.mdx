@@ -1,0 +1,69 @@
+---
+title: "Get Started with ActivityWatch"
+description: "Install ActivityWatch on Windows, macOS, or Linux, launch the dashboard at localhost:5600, and verify your watchers are recording — all in under five minutes."
+---
+
+ActivityWatch is designed to be running in the background within minutes of downloading it. This guide walks you through downloading a release package, launching the application, and confirming that your activity is being recorded. No configuration is required to start tracking — ActivityWatch begins collecting data as soon as the watchers are running.
+
+<Steps>
+  <Step title="Download">
+    Go to the [ActivityWatch releases page](https://github.com/ActivityWatch/activitywatch/releases) and download the latest release for your platform:
+
+    - **Windows** — download the `.exe` installer (e.g., `activitywatch-v0.x.x-windows-x86_64-setup.exe`)
+    - **macOS** — download the `.dmg` disk image (e.g., `activitywatch-v0.x.x-macos-x86_64.dmg`)
+    - **Linux** — download the `.zip` archive (e.g., `activitywatch-v0.x.x-linux-x86_64.zip`)
+  </Step>
+  <Step title="Install">
+    Install ActivityWatch for your operating system:
+
+    - **Windows** — run the `.exe` installer and follow the setup wizard. ActivityWatch will be installed and added to your Start menu.
+    - **macOS** — open the `.dmg` file and drag the **ActivityWatch** application into your **Applications** folder.
+    - **Linux** — extract the `.zip` archive to a location of your choice (e.g., `~/activitywatch`) and make the binary executable:
+
+    ```bash
+    unzip activitywatch-*.zip -d ~/activitywatch
+    chmod +x ~/activitywatch/aw-qt
+    ```
+  </Step>
+  <Step title="Launch">
+    Start ActivityWatch by running `aw-qt` (the system tray manager):
+
+    - **Windows / macOS** — launch ActivityWatch from the Start menu or Applications folder.
+    - **Linux** — run `./aw-qt` from the directory where you extracted the archive, or `python -m aw_qt` if you installed from source.
+
+    `aw-qt` appears as an icon in your system tray and automatically starts `aw-server` on port 5600. The built-in watchers (`aw-watcher-window` and `aw-watcher-afk`) begin collecting data immediately.
+  </Step>
+  <Step title="Open the dashboard">
+    Open your web browser and navigate to:
+
+    ```
+    http://localhost:5600
+    ```
+
+    The ActivityWatch web dashboard loads directly from the local server. You will see the activity timeline and summary views once data starts coming in — typically within a few seconds of the watchers starting.
+  </Step>
+  <Step title="Verify watchers">
+    In the dashboard, click **Buckets** in the top navigation. You should see at least two buckets listed:
+
+    - `aw-watcher-window_<hostname>` — confirms the window tracker is running
+    - `aw-watcher-afk_<hostname>` — confirms the AFK tracker is running
+
+    If both buckets appear and show recent events, ActivityWatch is recording your activity correctly.
+  </Step>
+</Steps>
+
+<Info>
+  ActivityWatch runs as a background service. You can configure it to start automatically on login through the system tray icon menu, or by enabling autostart in the ActivityWatch settings. See the [installation guide](/installation#autostart-on-login) for platform-specific instructions.
+</Info>
+
+<CardGroup cols={2}>
+  <Card title="Build from source" icon="code" href="/installation">
+    Need to compile ActivityWatch yourself? The installation guide covers building from source with Python and Make.
+  </Card>
+  <Card title="Dashboard guide" icon="chart-bar" href="/usage/dashboard">
+    Learn how to navigate the timeline, filter by category, and export your activity data.
+  </Card>
+  <Card title="Watchers" icon="eye" href="/usage/watchers">
+    Install additional watchers for browser tabs, editor activity, and more.
+  </Card>
+</CardGroup>

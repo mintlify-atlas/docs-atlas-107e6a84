@@ -1,0 +1,94 @@
+---
+title: "Events API — Read and Write Activity Events"
+description: "REST API endpoints for inserting, retrieving, and deleting ActivityWatch events. POST heartbeats to extend ongoing events; GET events with time-range filters."
+---
+
+Events are the core data unit in ActivityWatch. Each event has a `timestamp`, `duration`, and a `data` payload specific to the watcher type. This page covers all event-related endpoints.
+
+## Get events from a bucket
+
+```
+GET /api/0/buckets/{bucket_id}/events
+```
+
+**Query parameters:**
+
+<ParamField query="start" type="string">
+  ISO 8601 timestamp — return events starting at or after this time
+</ParamField>
+
+<ParamField query="end" type="string">
+  ISO 8601 timestamp — return events ending at or before this time
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Maximum number of events to return (default: all)
+</ParamField>
+
+```bash
+curl "http://localhost:5600/api/0/buckets/aw-watcher-window_my-laptop/events?start=2024-01-15T00:00:00Z&end=2024-01-15T23:59:59Z&limit=100"
+```
+
+**Response:**
+```json
+[
+  {
+    "id": 1,
+    "timestamp": "2024-01-15T09:30:00.000000+00:00",
+    "duration": 45.2,
+    "data": { "app": "Firefox", "title": "ActivityWatch - GitHub" }
+  }
+]
+```
+
+## Insert events
+
+```
+POST /api/0/buckets/{bucket_id}/events
+```
+
+Accepts a single event object or an array of events.
+
+```bash
+curl -X POST http://localhost:5600/api/0/buckets/my-watcher_my-laptop/events \
+  -H "Content-Type: application/json" \
+  -d '[{"timestamp": "2024-01-15T09:30:00+00:00", "duration": 30, "data": {"key": "value"}}]'
+```
+
+## Send a heartbeat
+
+```
+POST /api/0/buckets/{bucket_id}/heartbeat?pulsetime={seconds}
+```
+
+Heartbeats are the standard way watchers report ongoing activity. If the new heartbeat arrives within `pulsetime` seconds and has identical `data`, the server extends the current event's duration instead of creating a new event.
+
+<ParamField query="pulsetime" type="float" required>
+  Seconds within which a matching heartbeat will extend the current event
+</ParamField>
+
+**Request body:** a single event object (timestamp, duration, data)
+
+```bash
+curl -X POST "http://localhost:5600/api/0/buckets/my-watcher_my-laptop/heartbeat?pulsetime=30" \
+  -H "Content-Type: application/json" \
+  -d '{"timestamp": "2024-01-15T09:30:00+00:00", "duration": 0, "data": {"app": "Firefox"}}'
+```
+
+## Get event count
+
+```
+GET /api/0/buckets/{bucket_id}/events/count
+```
+
+Returns an integer count of all events in the bucket.
+
+## Delete an event
+
+```
+DELETE /api/0/buckets/{bucket_id}/events/{event_id}
+```
+
+```bash
+curl -X DELETE http://localhost:5600/api/0/buckets/my-watcher_my-laptop/events/42
+```

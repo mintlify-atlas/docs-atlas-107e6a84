@@ -1,0 +1,89 @@
+---
+title: "Query API — Filter and Aggregate Activity Events"
+description: "POST /api/0/query/ runs ActivityWatch's query language over stored events. Accepts timeperiods and query arrays; returns filtered, merged, sorted event results."
+---
+
+The Query API lets you run powerful data transformations over your activity events without writing application code. Queries are submitted as POST requests and return processed event arrays.
+
+## Endpoint
+
+```
+POST /api/0/query/
+```
+
+**Query parameters:**
+
+<ParamField query="name" type="string">
+  Optional name for the query (used for caching)
+</ParamField>
+
+**Request body:**
+
+<ParamField body="timeperiods" type="array" required>
+  Array of time period strings in the format `"start/end"` using ISO 8601 timestamps
+</ParamField>
+
+<ParamField body="query" type="array" required>
+  Array of query statement strings (each element is one statement)
+</ParamField>
+
+## Example: Active time by app
+
+```bash
+curl -X POST "http://localhost:5600/api/0/query/" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "timeperiods": ["2024-01-15T00:00:00+00:00/2024-01-16T00:00:00+00:00"],
+    "query": [
+      "events = query_bucket(\"aw-watcher-window_my-laptop\");",
+      "afk = query_bucket(\"aw-watcher-afk_my-laptop\");",
+      "afk = filter_keyvals(afk, \"status\", [\"afk\"]);",
+      "events = filter_period_intersect(events, afk);",
+      "events = merge_events_by_keys(events, [\"app\"]);",
+      "RETURN = sort_by_duration(events);"
+    ]
+  }'
+```
+
+**Response:** An array of result arrays (one per time period):
+
+```json
+[[
+  {"id": null, "timestamp": "...", "duration": 3600.5, "data": {"app": "Firefox"}},
+  {"id": null, "timestamp": "...", "duration": 2100.2, "data": {"app": "VSCode"}}
+]]
+```
+
+## Query language reference
+
+| Function | Signature | Description |
+|---|---|---|
+| `query_bucket` | `(bucket_id)` | Fetch all events from a bucket for the query time period |
+| `filter_keyvals` | `(events, key, values)` | Keep events where `data[key]` is in `values` |
+| `exclude_keyvals` | `(events, key, values)` | Remove events where `data[key]` is in `values` |
+| `filter_period_intersect` | `(events, filter_events)` | Keep events that overlap with filter_events |
+| `merge_events_by_keys` | `(events, keys)` | Merge consecutive events with identical values for given keys |
+| `sort_by_duration` | `(events)` | Sort events descending by duration |
+| `limit_events` | `(events, count)` | Return the first N events |
+| `categorize` | `(events, rules)` | Add a `$category` key using matching rules |
+| `tag` | `(events, rules)` | Add tags to events based on rules |
+
+<Note>
+The `RETURN` statement is required — it specifies which variable to return as the query result.
+</Note>
+
+## Multiple time periods
+
+You can query multiple days in a single request by listing multiple time periods:
+
+```json
+{
+  "timeperiods": [
+    "2024-01-14T00:00:00+00:00/2024-01-15T00:00:00+00:00",
+    "2024-01-15T00:00:00+00:00/2024-01-16T00:00:00+00:00"
+  ],
+  "query": ["events = query_bucket(\"aw-watcher-window_host\"); RETURN = events;"]
+}
+```
+
+The response will be an array with one result array per time period.

@@ -1,0 +1,137 @@
+---
+title: "Install ActivityWatch on Windows, macOS, and Linux"
+description: "Install ActivityWatch from a pre-built release package on Windows, macOS, or Linux, or build from source using Python, Make, and Node.js."
+---
+
+ActivityWatch can be installed in two ways: by downloading a pre-built release package (the quickest option for most users), or by building directly from the source repository (useful for developers, contributors, or users who want the latest unreleased changes). Both approaches produce the same running application — `aw-qt`, `aw-server`, and the built-in watchers.
+
+<Tabs>
+  <Tab title="Release package">
+    Download the latest release from the [ActivityWatch releases page](https://github.com/ActivityWatch/activitywatch/releases) and follow the instructions for your operating system.
+
+    ### Windows
+
+    1. Download the `.exe` installer for your architecture (e.g., `activitywatch-v0.x.x-windows-x86_64-setup.exe`).
+    2. Run the installer and follow the setup wizard.
+    3. ActivityWatch appears as an icon in the system tray after installation. The local server starts automatically on port 5600.
+
+    ### macOS
+
+    1. Download the `.dmg` disk image (e.g., `activitywatch-v0.x.x-macos-x86_64.dmg`).
+    2. Open the `.dmg` file and drag **ActivityWatch** into your **Applications** folder.
+    3. Launch ActivityWatch from Applications. On first launch, macOS may ask you to confirm opening an app from the internet — click **Open**.
+
+    ### Linux
+
+    1. Download the `.zip` archive (e.g., `activitywatch-v0.x.x-linux-x86_64.zip`).
+    2. Extract the archive:
+
+    ```bash
+    unzip activitywatch-*.zip -d ~/activitywatch
+    ```
+
+    3. Make the launcher executable and run it:
+
+    ```bash
+    chmod +x ~/activitywatch/aw-qt
+    ~/activitywatch/aw-qt
+    ```
+
+    ActivityWatch starts in the system tray. If your desktop environment does not show system tray icons, you can run `aw-server` and the watchers directly, or use the provided systemd service file for headless operation.
+  </Tab>
+  <Tab title="Build from source">
+    Building from source requires cloning the repository with all submodules and running `make build`. This compiles the Python modules and the web UI.
+
+    ### Prerequisites
+
+    - **Python 3.8+** — required for all Python modules (`aw-server`, `aw-watcher-window`, `aw-watcher-afk`, etc.)
+    - **Git** — needed to clone the repository and fetch submodules
+    - **Make** — used to orchestrate the build across all submodules
+    - **Node.js** — required to build the `aw-webui` frontend (bundled with `aw-server`)
+
+    ### Build steps
+
+    <Steps>
+      <Step title="Clone with submodules">
+        ActivityWatch is a meta-repository that bundles all components as Git submodules. Clone with the `--recursive` flag to fetch everything in one step:
+
+        ```bash
+        git clone --recursive https://github.com/ActivityWatch/activitywatch.git
+        cd activitywatch
+        ```
+      </Step>
+      <Step title="Create a virtual environment">
+        Create and activate a Python virtual environment to keep dependencies isolated:
+
+        ```bash
+        python3 -m venv venv
+        source venv/bin/activate
+        ```
+
+        On Windows, activate with:
+
+        ```powershell
+        venv\Scripts\activate
+        ```
+      </Step>
+      <Step title="Install setuptools">
+        Install a compatible version of `setuptools` before building. This is required due to a known setuptools issue:
+
+        ```bash
+        pip install 'setuptools>49.1.1'
+        ```
+      </Step>
+      <Step title="Build all modules">
+        Run `make build` from the repository root. This installs all Python packages and compiles the web UI:
+
+        ```bash
+        make build
+        ```
+
+        The build process iterates over each submodule (`aw-core`, `aw-client`, `aw-server`, `aw-server-rust`, `aw-watcher-afk`, `aw-watcher-window`, and `aw-qt`) and runs their individual build targets.
+      </Step>
+      <Step title="Run ActivityWatch">
+        Start ActivityWatch using the system tray manager:
+
+        ```bash
+        aw-qt
+        ```
+
+        Alternatively, run it as a Python module:
+
+        ```bash
+        python -m aw_qt
+        ```
+
+        The server starts on port 5600 and the dashboard is accessible at `http://localhost:5600`.
+      </Step>
+    </Steps>
+
+    <Warning>
+      Building from source requires all Git submodules to be present. If any submodule directory is empty or missing, run the following before building:
+
+      ```bash
+      git submodule update --init --recursive
+      ```
+    </Warning>
+  </Tab>
+</Tabs>
+
+## Android
+
+The ActivityWatch Android app is available as a separate project. You can download the APK from the [aw-android releases page](https://github.com/ActivityWatch/aw-android/releases) on GitHub. The Android app runs a local server on the device and includes a built-in window and app watcher. It is not available on the Google Play Store — installation requires enabling installation from unknown sources.
+
+## Autostart on login
+
+ActivityWatch does not automatically configure autostart during installation on all platforms. To ensure it starts when you log in:
+
+- **Windows** — in the system tray, right-click the ActivityWatch icon and enable **Launch on startup**, or add a shortcut to your Startup folder (`shell:startup`).
+- **macOS** — go to **System Settings → General → Login Items** and add ActivityWatch to the list.
+- **Linux (systemd)** — a systemd user service file is included in the release archive. Enable it with:
+
+  ```bash
+  systemctl --user enable activitywatch
+  systemctl --user start activitywatch
+  ```
+
+  If no service file is included in your release, you can create one manually pointing to the `aw-qt` binary.

@@ -1,0 +1,95 @@
+---
+title: "ActivityWatch Watchers: What You Can Track"
+description: "Watchers are the data collectors in ActivityWatch. Learn about built-in watchers and community-built extensions for browsers, editors, and more."
+---
+
+Watchers are the background processes that feed data into ActivityWatch. Each watcher observes one aspect of your activity — the active window, your AFK status, the browser tab you have open, or what you are editing in your IDE — and sends that data to `aw-server` as timestamped **heartbeat** events. The server stores those events in dedicated **buckets**, one per watcher per host. Everything you see on the dashboard comes from these buckets.
+
+## Built-in watchers
+
+ActivityWatch ships with two watchers that start automatically when you launch the application via `aw-qt`.
+
+<CardGroup cols={2}>
+  <Card title="aw-watcher-window" icon="display">
+    Tracks the currently active application and its window title on Windows, macOS, and Linux. It records the foreground window at frequent intervals, producing a high-resolution log of which app had focus and for how long.
+  </Card>
+  <Card title="aw-watcher-afk" icon="clock">
+    Monitors keyboard and mouse input to detect when you are away from the keyboard (AFK). It produces events with a `status` field of either `"not-afk"` or `"afk"`, which the dashboard and query engine use to subtract idle time from your active totals.
+  </Card>
+</CardGroup>
+
+Both watchers register their buckets in `aw-server` with names following the pattern `aw-watcher-window_<hostname>` and `aw-watcher-afk_<hostname>`. You can verify they are running by checking the **Buckets** page of the dashboard.
+
+## Browser extensions
+
+`aw-watcher-web` is an official browser extension that tracks the active tab's URL and title. It sends heartbeat events to `aw-server` so you can see exactly which websites you visit and for how long — data that `aw-watcher-window` alone cannot provide (since it only sees the browser application, not the individual page).
+
+The extension is available for:
+
+- **Chrome / Chromium** — install from the Chrome Web Store
+- **Firefox** — install from the Firefox Add-ons site
+
+Download links and installation instructions are available on the [ActivityWatch website](https://activitywatch.net).
+
+<Tip>
+  After installing `aw-watcher-web`, you will see a new bucket appear in the dashboard: `aw-watcher-web-chrome_<hostname>` or `aw-watcher-web-firefox_<hostname>`. Use the Category view to classify websites by URL pattern.
+</Tip>
+
+## Editor and IDE plugins
+
+ActivityWatch has official and community-maintained plugins for most popular editors. These plugins report which file and project you are working on, giving you accurate coding time separate from other computer use.
+
+| Editor | Plugin |
+|--------|--------|
+| VS Code | ActivityWatch-vscode |
+| Vim / Neovim | aw-watcher-vim |
+| Emacs | aw-watcher-emacs |
+| JetBrains IDEs | aw-watcher-jetbrains |
+
+For the full, up-to-date list with installation links, see the [watchers page in the ActivityWatch documentation](https://docs.activitywatch.net/en/latest/watchers.html).
+
+## Community watchers
+
+The ActivityWatch community has built watchers that go well beyond the official set. Examples include:
+
+- **Terminal activity** — track which commands you run in your shell
+- **Meetings** — detect active Zoom or Microsoft Teams calls
+- **Media playback** — record time spent in music or video players
+- **Mobile** — ActivityWatch for Android tracks app usage on your phone
+
+Browse the [ActivityWatch forum](https://forum.activitywatch.net/) and the [ActivityWatch GitHub organization](https://github.com/ActivityWatch) to find watchers that suit your workflow.
+
+## Installing additional watchers
+
+Most community watchers are Python packages. Install them with `pip`:
+
+```bash
+pip install aw-watcher-<name>
+```
+
+Once installed, run the watcher from your terminal:
+
+```bash
+aw-watcher-<name>
+```
+
+The watcher registers itself as a new bucket in `aw-server` on first run and begins sending heartbeat events. You do not need to restart `aw-server` — new buckets appear automatically.
+
+<Info>
+  Some watchers ship as standalone binaries or browser extensions rather than Python packages. Check the individual watcher's README for its specific installation instructions.
+</Info>
+
+## How heartbeats work
+
+Watchers do not create a new event for every second of activity. Instead, they send periodic **heartbeat** signals to `aw-server`. Each heartbeat carries a `pulsetime` value — a tolerance window in seconds.
+
+When `aw-server` receives a heartbeat:
+
+- If the new heartbeat arrives within `pulsetime` seconds of the previous one, and the event data is identical, the server **extends** the existing event rather than creating a new one.
+- If the heartbeat arrives after the `pulsetime` window has elapsed, or if the data has changed (for example, a different window is now active), the server **closes** the current event and starts a new one.
+
+This approach keeps storage efficient while maintaining a continuous, gapless record of your activity. A typical `pulsetime` for `aw-watcher-window` is around 5 seconds.
+
+<Tip>
+  Always run `aw-watcher-afk` alongside any other watcher. The AFK data it produces allows the dashboard and query engine to filter out idle time, so your reports reflect time you were genuinely active rather than time the computer was simply on.
+</Tip>

@@ -1,0 +1,64 @@
+---
+title: "ActivityWatch REST API Overview"
+description: "ActivityWatch REST API reference: base URL, authentication model, JSON response format, and a complete index of bucket, event, heartbeat, and query endpoints."
+---
+
+ActivityWatch exposes a REST API at `http://localhost:5600/api/0/` that provides full programmatic access to all activity data. The same API powers the web dashboard and is used by all watchers to send events.
+
+## Base URL
+
+```
+http://localhost:5600/api/0/
+```
+
+The API is only accessible on `localhost` by default. If you change the `host` setting to `0.0.0.0`, the API becomes accessible on your local network.
+
+## Authentication
+
+The API has no authentication by default — it is designed to be a local-only service. If you expose it on the network, you are responsible for securing access (e.g., with a reverse proxy and basic auth).
+
+## Response format
+
+All responses are JSON. Timestamps follow ISO 8601 format in UTC. Durations are floating-point seconds.
+
+```json
+{
+  "id": 1,
+  "timestamp": "2024-01-15T09:30:00.000000+00:00",
+  "duration": 45.2,
+  "data": { "app": "Firefox", "title": "ActivityWatch - GitHub" }
+}
+```
+
+## Available endpoints
+
+| Resource | Endpoint | Description |
+|---|---|---|
+| Info | `GET /api/0/info` | Server version and hostname |
+| Buckets | `GET /api/0/buckets/` | List all buckets |
+| Buckets | `POST /api/0/buckets/{id}` | Create a bucket |
+| Buckets | `DELETE /api/0/buckets/{id}` | Delete a bucket and all its events |
+| Events | `GET /api/0/buckets/{id}/events` | Get events from a bucket |
+| Events | `POST /api/0/buckets/{id}/events` | Insert one or more events |
+| Events | `DELETE /api/0/buckets/{id}/events/{event_id}` | Delete a single event |
+| Heartbeat | `POST /api/0/buckets/{id}/heartbeat` | Send a heartbeat |
+| Query | `POST /api/0/query/` | Run a query against event data |
+
+## Interactive API explorer
+
+The built-in web UI includes a Query Explorer at `http://localhost:5600/#/query`. For the raw OpenAPI/Swagger interface (when using aw-server-rust), visit `http://localhost:5600/swagger-ui/`.
+
+<CardGroup cols={2}>
+  <Card title="Buckets API" icon="database" href="/developer/api-buckets">
+    Create, list, and delete buckets
+  </Card>
+  <Card title="Events API" icon="list" href="/developer/api-events">
+    Read and write timestamped events
+  </Card>
+  <Card title="Query API" icon="magnifying-glass" href="/developer/api-query">
+    Filter and aggregate event data
+  </Card>
+  <Card title="Python Client" icon="python" href="/developer/aw-client">
+    Use aw-client instead of raw HTTP
+  </Card>
+</CardGroup>

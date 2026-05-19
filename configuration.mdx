@@ -1,0 +1,168 @@
+---
+title: "Configure ActivityWatch Settings and Watchers"
+description: "Learn how to configure ActivityWatch's server port, storage location, watcher behavior, and autostart settings across Windows, macOS, and Linux."
+---
+
+ActivityWatch uses configuration files stored in a platform-specific config directory, and most settings can also be changed through the web dashboard Settings page. Each component — `aw-server`, `aw-watcher-afk`, `aw-watcher-window`, and `aw-qt` — has its own TOML configuration file in a dedicated subdirectory. You only need to edit these files when you want to override the defaults; ActivityWatch runs without any manual configuration out of the box.
+
+## Configuration file locations
+
+The config directory location depends on your operating system:
+
+<Tabs>
+  <Tab title="Windows">
+    ```
+    %APPDATA%\activitywatch\
+    ```
+
+    Each component stores its config in a named subdirectory, for example:
+
+    ```
+    %APPDATA%\activitywatch\aw-server\aw-server.toml
+    %APPDATA%\activitywatch\aw-watcher-afk\aw-watcher-afk.toml
+    %APPDATA%\activitywatch\aw-watcher-window\aw-watcher-window.toml
+    ```
+  </Tab>
+  <Tab title="macOS">
+    ```
+    ~/Library/Application Support/activitywatch/
+    ```
+
+    Each component stores its config in a named subdirectory, for example:
+
+    ```
+    ~/Library/Application Support/activitywatch/aw-server/aw-server.toml
+    ~/Library/Application Support/activitywatch/aw-watcher-afk/aw-watcher-afk.toml
+    ~/Library/Application Support/activitywatch/aw-watcher-window/aw-watcher-window.toml
+    ```
+  </Tab>
+  <Tab title="Linux">
+    ```
+    ~/.config/activitywatch/
+    ```
+
+    Each component stores its config in a named subdirectory, for example:
+
+    ```
+    ~/.config/activitywatch/aw-server/aw-server.toml
+    ~/.config/activitywatch/aw-watcher-afk/aw-watcher-afk.toml
+    ~/.config/activitywatch/aw-watcher-window/aw-watcher-window.toml
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+  After editing any configuration file, restart ActivityWatch for the changes to take effect.
+</Note>
+
+## aw-server settings
+
+`aw-server` is the local REST API server that stores all activity data and serves the web dashboard. Its config file is located at:
+
+```
+aw-server/aw-server.toml
+```
+
+| Setting | Default | Description |
+| --- | --- | --- |
+| `host` | `localhost` | Network interface the server listens on. Set to `localhost` to restrict access to your local machine only. |
+| `port` | `5600` | Port for the web UI and REST API. Change this if another application is already using port 5600. |
+| `storage` | `peewee` | Storage backend. Use `peewee` (SQLite via the peewee ORM) for normal use, or `memory` for testing (data is not persisted). |
+
+Example `aw-server.toml`:
+
+```toml aw-server.toml
+[server]
+host = "localhost"
+port = 5600
+storage = "peewee"
+```
+
+## aw-watcher-afk settings
+
+`aw-watcher-afk` monitors keyboard and mouse activity to determine whether you are active or away from keyboard. Its config file is located at:
+
+```
+aw-watcher-afk/aw-watcher-afk.toml
+```
+
+| Setting | Default | Description |
+| --- | --- | --- |
+| `timeout` | `180` | Seconds of inactivity before marking you as AFK. Increase this if you frequently read long documents without interacting with your keyboard or mouse. |
+| `poll_time` | `5` | How often (in seconds) the watcher checks for keyboard and mouse input. |
+
+Example `aw-watcher-afk.toml`:
+
+```toml aw-watcher-afk.toml
+[afk]
+timeout = 180
+poll_time = 5
+```
+
+## aw-watcher-window settings
+
+`aw-watcher-window` tracks the currently active application and its window title. Its config file is located at:
+
+```
+aw-watcher-window/aw-watcher-window.toml
+```
+
+| Setting | Default | Description |
+| --- | --- | --- |
+| `poll_time` | `1` | How often (in seconds) the watcher checks which window is in focus. Lower values give finer time resolution; higher values reduce CPU usage. |
+| `exclude_title` | `false` | When set to `true`, window titles are not stored — only the application name is recorded. Useful when window titles may contain sensitive information. |
+
+Example `aw-watcher-window.toml`:
+
+```toml aw-watcher-window.toml
+[watcher]
+poll_time = 1.0
+exclude_title = false
+```
+
+<Tip>
+  Set `exclude_title = true` to keep window titles out of the database for applications that display personal or sensitive content in their title bar (for example, email clients or password managers).
+</Tip>
+
+## Autostart on login
+
+ActivityWatch does not configure autostart during installation on all platforms. The setup varies by operating system.
+
+<Tabs>
+  <Tab title="Windows">
+    Open the system tray, right-click the ActivityWatch icon, and navigate to **Settings → Start at login** to toggle autostart. ActivityWatch adds itself to the Windows startup registry.
+  </Tab>
+  <Tab title="macOS">
+    Open the system tray, click the ActivityWatch icon, and navigate to **Settings → Start at login** to enable or disable autostart. ActivityWatch registers itself as a Login Item on your account.
+  </Tab>
+  <Tab title="Linux">
+    ActivityWatch on Linux uses a systemd user service for autostart. The repository includes a helper script at `scripts/symlink-systemd.sh` that creates symlinks for each component service in `~/.config/systemd/user/`.
+
+    Run the script from the repository root:
+
+    ```bash
+    bash scripts/symlink-systemd.sh
+    ```
+
+    Then enable and start the service:
+
+    ```bash
+    systemctl --user enable aw-qt
+    systemctl --user start aw-qt
+    ```
+
+    The script creates symlinks for `aw-server`, `aw-watcher-afk`, and `aw-watcher-x11`. You can manage each component independently via `systemctl --user`.
+  </Tab>
+</Tabs>
+
+<CardGroup cols={3}>
+  <Card title="Privacy" icon="shield" href="/privacy">
+    Learn what data ActivityWatch collects and how it stays on your device.
+  </Card>
+  <Card title="Sync" icon="arrows-rotate" href="/sync">
+    Set up experimental data sync across devices with aw-sync.
+  </Card>
+  <Card title="REST API" icon="code" href="/developer/api-overview">
+    Explore the REST API to query and export your activity data programmatically.
+  </Card>
+</CardGroup>

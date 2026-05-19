@@ -1,0 +1,84 @@
+---
+title: "Query Your Activity Data with ActivityWatch"
+description: "Use ActivityWatch's query language to filter, merge, and aggregate event data across buckets — directly in the browser or via the REST API."
+---
+
+ActivityWatch includes a simple scripting language for querying event data stored in your local buckets. You can use it to filter out idle time, aggregate events by application, apply category rules, and produce exactly the summary you need — either interactively in the built-in Query Explorer or programmatically via the `POST /api/0/query/` endpoint. The query language is the same engine that powers the dashboard views, so anything the dashboard shows can be reproduced and extended with a custom query.
+
+## Opening the Query Explorer
+
+Navigate to `http://localhost:5600/#/query` in your browser. The Query Explorer provides a text editor for writing queries, a time-range selector, and a results pane that displays the returned events as a table and a duration chart.
+
+<Note>
+  Bucket IDs include the hostname of the machine, for example `aw-watcher-window_myhostname`. To find the exact IDs for your buckets, open the **Buckets** page of the dashboard at `http://localhost:5600/#/buckets` and copy the ID from there before writing your first query.
+</Note>
+
+## Query language basics
+
+A query is a list of statements separated by semicolons. Each statement assigns the result of a function call to a variable. The final statement must assign to the special variable `RETURN`, which tells the server what to send back as the query result.
+
+```text
+events = query_bucket("aw-watcher-window_hostname");
+RETURN = events;
+```
+
+Variables can be passed into subsequent function calls, making it straightforward to build up a pipeline of transformations:
+
+```text
+events = query_bucket("aw-watcher-window_hostname");
+afk_events = query_bucket("aw-watcher-afk_hostname");
+afk_events = filter_keyvals(afk_events, "status", ["afk"]);
+events = filter_period_intersect(events, afk_events);
+events = merge_events_by_keys(events, ["app"]);
+RETURN = sort_by_duration(events);
+```
+
+This example fetches raw window events, fetches AFK events, filters down to only the idle periods, removes any window events that overlap with idle time, merges the remaining events by application name, and sorts the result by total duration — the same calculation the Activity view performs.
+
+## Common query functions
+
+| Function | Description |
+|----------|-------------|
+| `query_bucket(bucket_id)` | Fetch all events from the named bucket for the selected time period. |
+| `filter_keyvals(events, key, values)` | Keep only events where `data[key]` is one of the values in the list. |
+| `filter_period_intersect(events, filter_events)` | Keep only events that overlap in time with at least one event in `filter_events`. Use this to subtract AFK time. |
+| `merge_events_by_keys(events, keys)` | Merge consecutive events that share the same values for the specified keys, summing their durations. |
+| `sort_by_duration(events)` | Sort events in descending order by duration. |
+| `limit_events(events, count)` | Return only the first `count` events. |
+| `categorize(events, rules)` | Classify events using a list of category rules. Each rule is a list of the form `[pattern, category_name]`. |
+
+## Using the API
+
+You can run queries from any HTTP client by sending a `POST` request to `/api/0/query/`. The request body is a JSON object with a `query` array (one string per statement) and a `timeperiods` array specifying the time range.
+
+```bash
+curl --request POST \
+  --url http://localhost:5600/api/0/query/ \
+  --header "Content-Type: application/json" \
+  --data '{
+    "query": [
+      "events = query_bucket(\"aw-watcher-window_myhostname\");",
+      "afk_events = query_bucket(\"aw-watcher-afk_myhostname\");",
+      "afk_events = filter_keyvals(afk_events, \"status\", [\"afk\"]);",
+      "events = filter_period_intersect(events, afk_events);",
+      "events = merge_events_by_keys(events, [\"app\"]);",
+      "RETURN = sort_by_duration(events);"
+    ],
+    "timeperiods": ["2026-05-19T00:00:00/2026-05-20T00:00:00"]
+  }'
+```
+
+The server returns a JSON array of event objects, each with `timestamp`, `duration`, and `data` fields. Time periods follow ISO 8601 interval notation: `start/end`.
+
+<Info>
+  The `aw-client` Python library wraps the query API with a convenient `query` method, so you can run queries from Python scripts without constructing raw HTTP requests. See the [developer guide](/developer/aw-client) for usage examples.
+</Info>
+
+<CardGroup cols={2}>
+  <Card title="Data model" icon="database" href="/developer/data-model">
+    Understand buckets, events, and how data is structured in aw-server.
+  </Card>
+  <Card title="API reference" icon="code" href="/developer/api-query">
+    Full REST API documentation for the query endpoint.
+  </Card>
+</CardGroup>

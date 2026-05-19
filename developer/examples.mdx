@@ -1,0 +1,101 @@
+---
+title: "ActivityWatch Client and Watcher Code Examples"
+description: "Practical Python examples for ActivityWatch: a polling watcher with heartbeats, querying top apps by duration, and importing historical events with aw-client."
+---
+
+These examples demonstrate common patterns for building ActivityWatch watchers and scripts. All examples use the `aw-client` Python library.
+
+## Example 1: Simple polling watcher
+
+A watcher that checks a condition every few seconds and sends heartbeats:
+
+```python simple_watcher.py
+import time
+from datetime import datetime, timezone
+from aw_client import ActivityWatchClient
+
+client = ActivityWatchClient("example-watcher")
+bucket_id = f"example-watcher_{client.client_hostname}"
+client.create_bucket(bucket_id, "example.status")
+
+POLL_INTERVAL = 5
+
+while True:
+    now = datetime.now(timezone.utc)
+    # Replace with your actual condition
+    status = "active"
+    client.heartbeat(
+        bucket_id,
+        {"timestamp": now, "duration": 0, "data": {"status": status}},
+        pulsetime=POLL_INTERVAL + 1,
+    )
+    time.sleep(POLL_INTERVAL)
+```
+
+## Example 2: Querying data with the Python client
+
+Fetch today's window events and print the top apps by duration:
+
+```python top_apps.py
+from datetime import datetime, timezone, timedelta
+from aw_client import ActivityWatchClient
+
+client = ActivityWatchClient("top-apps-script")
+
+# Build the query
+hostname = client.client_hostname
+query = [
+    f'events = query_bucket("aw-watcher-window_{hostname}");',
+    f'afk = query_bucket("aw-watcher-afk_{hostname}");',
+    'afk = filter_keyvals(afk, "status", ["afk"]);',
+    'events = filter_period_intersect(events, afk);',
+    'events = merge_events_by_keys(events, ["app"]);',
+    'RETURN = sort_by_duration(events);',
+]
+
+# Query today
+now = datetime.now(timezone.utc)
+start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+end = start + timedelta(days=1)
+
+results = client.query(query, [(start, end)])
+
+print("Top apps today:")
+for event in results[0][:10]:
+    minutes = event.duration.total_seconds() / 60
+    print(f"  {event.data['app']:30s} {minutes:6.1f} min")
+```
+
+## Example 3: Inserting historical events
+
+If you have data from another source to import:
+
+```python import_events.py
+from datetime import datetime, timezone
+from aw_client import ActivityWatchClient
+from aw_core.models import Event
+
+client = ActivityWatchClient("import-script")
+bucket_id = f"imported-data_{client.client_hostname}"
+client.create_bucket(bucket_id, "imported.event")
+
+events = [
+    Event(
+        timestamp=datetime(2024, 1, 15, 9, 0, 0, tzinfo=timezone.utc),
+        duration=3600.0,
+        data={"source": "import", "label": "morning session"},
+    ),
+]
+
+client.insert_events(bucket_id, events)
+print(f"Inserted {len(events)} events into {bucket_id}")
+```
+
+<CardGroup cols={2}>
+  <Card title="Writing Watchers" icon="plug" href="/developer/writing-watchers">
+    Step-by-step guide to building a watcher from scratch
+  </Card>
+  <Card title="aw-client Reference" icon="python" href="/developer/aw-client">
+    Full API reference for ActivityWatchClient
+  </Card>
+</CardGroup>

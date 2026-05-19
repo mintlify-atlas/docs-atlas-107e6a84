@@ -1,0 +1,81 @@
+---
+title: "Categorize Your Activity in ActivityWatch"
+description: "Set up category rules in ActivityWatch to automatically classify app usage and website visits into meaningful groups like Work, Social, and Entertainment."
+---
+
+ActivityWatch lets you define category rules that automatically classify events from `aw-watcher-window` and `aw-watcher-web` based on app name, window title, or URL patterns. Once your rules are in place, the Category view on the dashboard shows a breakdown of your day by category — "Work", "Social", "Entertainment", or whatever groupings make sense for you — rather than a raw list of application names.
+
+## Creating categories
+
+<Steps>
+  <Step title="Open the dashboard">
+    Navigate to `http://localhost:5600` in your browser.
+  </Step>
+  <Step title="Open Settings">
+    Click the gear icon in the top navigation bar to open **Settings**.
+  </Step>
+  <Step title="Go to Categories">
+    Select the **Categories** section from the settings sidebar.
+  </Step>
+  <Step title="Add a category">
+    Click **Add category** and give it a name such as "Work" or "Social". You can also nest categories under a parent (see [subcategories](#category-rules) below).
+  </Step>
+  <Step title="Add matching rules">
+    For each category, add one or more rules. Each rule specifies:
+
+    - **Match type** — whether to match against the application name (`app`), the window title (`title`), or the URL (for browser events).
+    - **Pattern** — a regex or plain substring to match against the selected field.
+
+    Click **Save** when done.
+  </Step>
+</Steps>
+
+## Category rules
+
+Each rule is evaluated against incoming events in the order your categories are listed. The **first matching rule wins** — once an event is assigned to a category, evaluation stops.
+
+**Regex support:** patterns are treated as regular expressions. Use `(?i)` at the start of a pattern for case-insensitive matching. For example, `(?i)slack|teams|zoom` matches any of those strings regardless of capitalization.
+
+**Subcategories:** you can create hierarchical categories by nesting them under a parent. For example:
+
+- Work
+  - Work > Coding
+  - Work > Meetings
+  - Work > Email
+
+To create a subcategory, click **Add category** on the parent category row rather than at the top level. The dashboard's Category view displays both the parent totals and the individual subcategory breakdowns.
+
+<Tip>
+  Use a pattern like `(?i)github|stackoverflow|gitlab|docs\.` to match multiple development-related sites under a "Coding" subcategory. Regex alternation (`|`) lets you cover many patterns in a single rule.
+</Tip>
+
+## Viewing category reports
+
+Once you have defined at least one category with a matching rule:
+
+1. Open the dashboard at `http://localhost:5600`.
+2. Navigate to the **Activity** view for the day you want to inspect.
+3. Toggle to the **Category** tab within the view.
+
+The Category view shows a pie chart and a ranked list of categories with their total durations. Subcategories appear nested beneath their parent, and you can expand each one to see individual events.
+
+## Default categories
+
+ActivityWatch ships with no default categories. The category system is intentionally blank so that you define groupings that match your own workflow, rather than having to remove or override presets that do not apply to you.
+
+<AccordionGroup>
+  <Accordion title="Why don't my categories appear in the Category view?">
+    Check two things:
+
+    1. **Category view is selected** — on the Activity page, make sure you have switched to the "Category" tab rather than the default "Apps" tab.
+    2. **Events exist for the selected day** — if no events have been recorded for the date you are viewing, all views will be empty. Confirm that your watchers are running by checking the Buckets page.
+
+    If you have events but no categories match them, revisit your rules and verify the regex pattern against the actual app names or window titles shown in the Apps tab.
+  </Accordion>
+  <Accordion title="Can I export category data?">
+    Yes, in two ways:
+
+    - **JSON export from the dashboard** — open the Buckets page, click the bucket you want (e.g., `aw-watcher-window_<hostname>`), and click **Export**. The exported JSON contains all raw events. You can post-process them against your category rules locally.
+    - **Query API** — use the `categorize(events, rules)` function in the Query explorer or via `POST /api/0/query/` to apply category filters server-side and return pre-classified results. See the [query guide](/usage/query) for details.
+  </Accordion>
+</AccordionGroup>

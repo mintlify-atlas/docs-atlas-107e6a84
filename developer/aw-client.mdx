@@ -1,0 +1,116 @@
+---
+title: "aw-client: ActivityWatch Python Client Reference"
+description: "Complete API reference for aw-client — install with pip, create buckets, send heartbeats, query events, and build custom watchers in Python."
+---
+
+`aw-client` is the official Python client library for ActivityWatch. It wraps the REST API and provides convenient methods for creating buckets, sending heartbeats, querying events, and more.
+
+## Installation
+
+```bash
+pip install aw-client
+```
+
+## ActivityWatchClient
+
+```python
+from aw_client import ActivityWatchClient
+
+client = ActivityWatchClient(
+    client_name,        # str: unique name for your watcher/client
+    testing=False,      # bool: use test server on port 5666
+    host="localhost",   # str: server host
+    port=5600,          # int: server port
+    protocol="http",    # str: "http" or "https"
+)
+```
+
+### Key properties
+
+- `client.client_hostname` — the current machine's hostname (useful for constructing bucket IDs)
+- `client.server_address` — full base URL of the connected server
+
+## Methods
+
+### create_bucket
+
+```python
+client.create_bucket(bucket_id: str, event_type: str) -> None
+```
+
+Creates a bucket. Safe to call on every startup — idempotent if the bucket already exists.
+
+### get_buckets
+
+```python
+client.get_buckets() -> dict[str, dict]
+```
+
+Returns a dictionary of all buckets, keyed by bucket ID.
+
+### get_events
+
+```python
+client.get_events(
+    bucket_id: str,
+    limit: int = -1,
+    start: datetime = None,
+    end: datetime = None,
+) -> list[Event]
+```
+
+Retrieves events from a bucket. Returns a list of `aw_core.models.Event` objects.
+
+### insert_events
+
+```python
+client.insert_events(bucket_id: str, events: list[Event]) -> list[Event]
+```
+
+Inserts one or more events directly into a bucket.
+
+### heartbeat
+
+```python
+client.heartbeat(
+    bucket_id: str,
+    event: dict,      # {"timestamp": datetime, "duration": float, "data": dict}
+    pulsetime: float, # seconds within which identical heartbeats are merged
+    queued: bool = False,
+) -> Event
+```
+
+Sends a heartbeat. If `queued=True`, heartbeats are batched and sent together for efficiency — useful in high-frequency watchers.
+
+### query
+
+```python
+client.query(query: list[str], timeperiods: list[tuple]) -> list[list[Event]]
+```
+
+Runs a query against the server. `timeperiods` is a list of `(start, end)` datetime tuples.
+
+### delete_bucket
+
+```python
+client.delete_bucket(bucket_id: str) -> None
+```
+
+Permanently deletes a bucket and all its events.
+
+## Event model
+
+```python
+from aw_core.models import Event
+from datetime import datetime, timezone
+
+event = Event(
+    timestamp=datetime.now(timezone.utc),
+    duration=30.0,
+    data={"app": "Firefox", "title": "ActivityWatch - GitHub"}
+)
+```
+
+<Note>
+The `Event` class is defined in `aw-core` (`aw_core.models`). Both `aw-client` and `aw-core` must be installed.
+</Note>

@@ -1,0 +1,52 @@
+---
+title: "ActivityWatch: Automated Time Tracker Overview"
+description: "ActivityWatch is a free, open-source time tracker that records app usage, window titles, and browser tabs — all stored locally on your machine."
+---
+
+ActivityWatch is a free, open-source, privacy-first automated time tracker. It runs entirely on your local machine and automatically records how you spend your time across applications, websites, and editor sessions — giving you a detailed picture of your day without sending any data to external servers. Licensed under the Mozilla Public License 2.0, ActivityWatch is fully transparent: you own your data and you control what gets tracked.
+
+## What ActivityWatch tracks
+
+ActivityWatch collects activity data through a system of modular watchers. Out of the box, it records:
+
+- **Active application and window title** — `aw-watcher-window` continuously logs the foreground application and its window title at high resolution.
+- **AFK / idle detection** — `aw-watcher-afk` monitors keyboard and mouse input to determine whether you are active or away from your keyboard.
+- **Browser tab and URL** — the `aw-watcher-web` browser extension (available for Chrome and Firefox) captures the active tab title and URL so you can see exactly which websites you visit and for how long.
+- **Editor activity** — editor plugins for VS Code, Vim, Emacs, and others report which files and projects you are working on, integrating coding time directly into your activity timeline.
+
+## Why ActivityWatch?
+
+- **Privacy-first local storage** — all data is written to a local datastore on your machine. Nothing is transmitted to any external server. You can inspect, export, or delete your data at any time.
+- **Open source (MPL-2.0)** — the full source code is available on GitHub. You can audit it, fork it, and contribute to it.
+- **Cross-platform** — ActivityWatch runs on Windows, macOS, Linux, and Android, with a consistent web-based dashboard on every platform.
+- **Extensible watcher system** — any developer can write a custom watcher using the Python client library (`aw-client`) or the REST API, making it straightforward to track new types of activity.
+- **17,000+ GitHub stars** — ActivityWatch is one of the most starred open-source time trackers, backed by an active community of contributors and users.
+
+<CardGroup cols={2}>
+  <Card title="Get started" icon="rocket" href="/getting-started">
+    Download ActivityWatch and start tracking your time in under five minutes.
+  </Card>
+  <Card title="Installation" icon="download" href="/installation">
+    Install from a release package or build from source on Windows, macOS, or Linux.
+  </Card>
+  <Card title="Watchers" icon="eye" href="/usage/watchers">
+    Explore all available watchers for apps, browsers, editors, and more.
+  </Card>
+  <Card title="Architecture" icon="sitemap" href="/developer/architecture">
+    Understand how the server, watchers, and web UI fit together.
+  </Card>
+</CardGroup>
+
+## Architecture overview
+
+ActivityWatch is composed of three layers that work together:
+
+1. **`aw-server`** — a local REST API server that stores all activity data in buckets (time-series containers). There are two server implementations: the default Python-based `aw-server` and the faster Rust-based `aw-server-rust`. Both expose the same API on port 5600.
+2. **Watchers** — lightweight background processes that observe system state (active window, AFK status, browser tab, etc.) and send timestamped heartbeat events to `aw-server` over the local REST API. The core bundle ships with `aw-watcher-window` and `aw-watcher-afk`; additional watchers can be installed separately.
+3. **`aw-webui`** — a web interface served by `aw-server` at `http://localhost:5600`. It provides an activity dashboard, timeline view, category editor, query explorer, and raw data browser — all querying the local server directly from your browser.
+
+The system tray application `aw-qt` manages the lifecycle of the server and built-in watchers, making it easy to start, stop, and monitor all components from a single icon.
+
+<Note>
+  Have a question or need help getting set up? Post on the [ActivityWatch forum](https://forum.activitywatch.net/) — the community is active and welcoming.
+</Note>

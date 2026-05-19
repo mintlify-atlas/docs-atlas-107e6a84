@@ -1,0 +1,52 @@
+---
+title: "ActivityWatch FAQ: Common Questions Answered"
+description: "Answers to frequently asked questions about ActivityWatch — installation, privacy, data storage, sync, browser extension, and more."
+---
+
+ActivityWatch's community frequently asks about privacy, data storage, platform support, and how to extend tracking. For more support, visit [forum.activitywatch.net](https://forum.activitywatch.net) or join [Discord](https://discord.gg/vDskV9q).
+
+<AccordionGroup>
+  <Accordion title="Is ActivityWatch free?">
+    Yes. ActivityWatch is completely free and open source under the [MPL-2.0 license](https://github.com/ActivityWatch/activitywatch/blob/master/LICENSE.txt). There are no paid tiers or premium features.
+  </Accordion>
+  <Accordion title="Does ActivityWatch send my data anywhere?">
+    No. All activity data is stored locally in a SQLite database on your machine. The server only binds to `localhost` by default, so no data ever leaves your device.
+  </Accordion>
+  <Accordion title="What platforms are supported?">
+    Windows, macOS, Linux, and Android. iOS is not currently supported.
+  </Accordion>
+  <Accordion title="Why isn't ActivityWatch tracking my active window?">
+    Check that `aw-watcher-window` is listed in the Buckets page at `http://localhost:5600`. On macOS, grant Accessibility permission under **System Settings → Privacy & Security → Accessibility**. On Linux X11, ensure `xdotool` and `xprop` are installed.
+  </Accordion>
+  <Accordion title="How do I fix 'address already in use' on port 5600?">
+    Another process is occupying port 5600. Open `~/.config/activitywatch/aw-server/aw-server.toml` (Linux/macOS) or `%APPDATA%\activitywatch\aw-server\aw-server.toml` (Windows) and change `port` to a free port such as `5601`.
+  </Accordion>
+  <Accordion title="Where is my data stored?">
+    - **Windows:** `%APPDATA%\activitywatch\aw-server\`
+    - **macOS:** `~/Library/Application Support/activitywatch/aw-server/`
+    - **Linux:** `~/.local/share/activitywatch/aw-server/`
+  </Accordion>
+  <Accordion title="How do I back up my data?">
+    Stop ActivityWatch, then copy the database directory above. You can also export individual buckets as JSON from the dashboard's Raw Data view.
+  </Accordion>
+  <Accordion title="Why does the dashboard show no data?">
+    Make sure ActivityWatch is running (look for the system tray icon) and at least one watcher is active. A new installation may show an empty dashboard for the first few minutes while the first events are recorded.
+  </Accordion>
+  <Accordion title="Can I track browser activity?">
+    Yes. Install the **aw-watcher-web** browser extension for Chrome or Firefox, available from [activitywatch.net](https://activitywatch.net).
+  </Accordion>
+  <Accordion title="How do I uninstall ActivityWatch?">
+    - **Windows:** Use Add/Remove Programs, then delete `%APPDATA%\activitywatch`.
+    - **macOS:** Drag ActivityWatch from Applications to Trash, then delete `~/Library/Application Support/activitywatch`.
+    - **Linux:** Delete the extracted directory and `~/.config/activitywatch`.
+  </Accordion>
+  <Accordion title="What is aw-server-rust?">
+    An alternative server implementation written in Rust, planned to become the default. It exposes the same REST API and is compatible with all existing clients and watchers.
+  </Accordion>
+  <Accordion title="Can ActivityWatch sync across devices?">
+    Yes, experimentally. Use `aw-sync` (bundled with aw-server-rust) combined with a file-sync tool such as Syncthing or Dropbox. See the [Sync guide](/sync).
+  </Accordion>
+  <Accordion title="How do I report a bug?">
+    File an issue on [GitHub](https://github.com/ActivityWatch/activitywatch/issues/new/choose) using the provided issue template. Include your OS, ActivityWatch version, and steps to reproduce.
+  </Accordion>
+</AccordionGroup>

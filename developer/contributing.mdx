@@ -1,0 +1,106 @@
+---
+title: "Contribute to ActivityWatch"
+description: "Contribute to ActivityWatch: find good first issues on GitHub, follow Conventional Commits, run tests with Make, and join the community on Discord or the forum."
+---
+
+ActivityWatch is open source under the MPL-2.0 license and actively welcomes contributions. Whether you want to fix a bug, add a watcher, improve documentation, or help triage issues, there is a place for you.
+
+## Ways to contribute
+
+<CardGroup cols={2}>
+  <Card title="Fix bugs" icon="bug" href="https://github.com/ActivityWatch/activitywatch/issues?q=is%3Aissue+is%3Aopen+label%3A%22type%3A+bug%22">
+    Browse open bug reports on GitHub
+  </Card>
+  <Card title="Good first issues" icon="star" href="https://github.com/ActivityWatch/activitywatch/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22">
+    Find beginner-friendly tasks labeled "good first issue"
+  </Card>
+  <Card title="Write documentation" icon="book" href="https://github.com/ActivityWatch/docs">
+    Improve guides, fix typos, or add new pages in the docs repo
+  </Card>
+  <Card title="Build watchers" icon="plug" href="/developer/writing-watchers">
+    Create new watchers for the community
+  </Card>
+</CardGroup>
+
+You can also look for issues labeled [`help wanted`](https://github.com/ActivityWatch/activitywatch/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22), check the [roadmap](https://github.com/orgs/ActivityWatch/projects/2), or browse [requested features](https://forum.activitywatch.net/c/features) on the forum.
+
+## Development setup
+
+Follow the [building from source](/developer/building-from-source) guide to get a local development environment running.
+
+## Commit message guidelines
+
+ActivityWatch follows [Conventional Commits](https://www.conventionalcommits.org/). It is encouraged but not a strict requirement, to minimize overhead for new contributors.
+
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer]
+```
+
+Valid types: `feat`, `fix`, `chore`, `ci`, `docs`, `style`, `refactor`, `perf`, `test`
+
+**Examples:**
+```
+feat: added ability to sort by duration
+fix: fixes incorrect week number (#407)
+docs: improved query documentation
+```
+
+## Running tests
+
+From the repository root:
+
+```bash
+make test
+```
+
+This runs tests in all submodules that have a `test` target. To run integration tests (requires a running server):
+
+```bash
+make test-integration
+```
+
+The integration test target runs `pytest` against `./scripts/tests/integration_tests.py` and `./aw-server/tests/`.
+
+## Code quality
+
+Run linting and type checking:
+
+```bash
+make lint
+make typecheck
+```
+
+Both targets iterate over all submodules that define a `lint` or `typecheck` target respectively.
+
+## Filing issues
+
+Use the [GitHub issue templates](https://github.com/ActivityWatch/activitywatch/issues/new/choose). Always include:
+- Your operating system and version
+- ActivityWatch version
+- Steps to reproduce
+- Expected vs. actual behavior
+
+## Code of Conduct
+
+All contributors are expected to follow the [Code of Conduct](https://github.com/ActivityWatch/activitywatch/blob/master/CODE_OF_CONDUCT.md).
+
+## Getting paid
+
+The ActivityWatch project experiments with compensating contributors using funds raised from donations and grants. If you have contributed at least 10 hours of work, contact the maintainers to learn more. See [the forum post](https://forum.activitywatch.net/t/getting-paid-with-activitywatch/986) for details.
+
+## Community
+
+<CardGroup cols={2}>
+  <Card title="Forum" icon="comments" href="https://forum.activitywatch.net">
+    Ask questions, share ideas, discuss features
+  </Card>
+  <Card title="Discord" icon="discord" href="https://discord.gg/vDskV9q">
+    Real-time chat with maintainers and contributors
+  </Card>
+</CardGroup>
+
+You can also open a thread in [GitHub Discussions](https://github.com/ActivityWatch/activitywatch/discussions) or email a maintainer at [erik@bjareho.lt](mailto:erik@bjareho.lt) as a last resort.

@@ -1,0 +1,79 @@
+---
+title: "ActivityWatch Dashboard: Timelines and Activity Reports"
+description: "Explore your tracked activity data with ActivityWatch's web dashboard — view timelines, daily summaries, app usage breakdowns, and category reports."
+---
+
+The ActivityWatch web dashboard is your primary interface for exploring everything ActivityWatch has recorded. It is served by `aw-server` and runs entirely on your local machine — no data leaves your system. Once ActivityWatch is running, open `http://localhost:5600` in any browser to access the full dashboard, including timeline views, app usage breakdowns, category reports, a raw data browser, and a built-in query explorer.
+
+## Accessing the dashboard
+
+Navigate to `http://localhost:5600` in your web browser. If ActivityWatch is running via `aw-qt` (the system tray manager), you can also click the tray icon and select **Open web UI** to open the dashboard directly.
+
+<Note>
+  The dashboard is served by `aw-server` and is only accessible from the local machine by default. It is not exposed to other devices on your network unless you explicitly configure the server to bind to a non-loopback address.
+</Note>
+
+## Dashboard views
+
+ActivityWatch's web interface (`aw-webui`) provides several distinct views for different ways of exploring your data.
+
+### Activity view
+
+The Activity view is the default landing page. It presents a daily summary for the selected date, showing:
+
+- **Total active time** — the amount of time the window watcher detected a focused application, minus AFK periods.
+- **AFK time** — idle time detected by `aw-watcher-afk` based on keyboard and mouse inactivity.
+- **App usage breakdown** — a ranked list of applications with their total durations for the day, derived from `aw-watcher-window` events.
+
+This view is the quickest way to answer "how did I spend my time today?"
+
+### Timeline view
+
+The Timeline view renders a horizontal visual timeline of your activity events across the day. Each event appears as a colored block, positioned by its start time and scaled to its duration. Hovering over a block shows the application name, window title, and exact timestamps.
+
+The timeline makes it easy to see your work patterns at a glance — when you were active, which applications you switched between, and how long each session lasted.
+
+### Category view
+
+The Category view shows your time broken down by the custom category rules you have defined. Instead of listing raw application names, it groups events into meaningful buckets such as "Work", "Social", or "Entertainment".
+
+<Info>
+  The Category view requires you to configure category rules first. If no rules are defined, the view will show all time as uncategorized. See the [categories guide](/usage/categories) to set up your rules.
+</Info>
+
+### Raw data / Buckets
+
+The Buckets page lists every data bucket registered with `aw-server`. Each bucket corresponds to a watcher running on a specific host (for example, `aw-watcher-window_myhostname`). Clicking a bucket opens a browser showing individual events with their exact timestamps, durations, and metadata fields such as `app` and `title`.
+
+This view is useful for verifying that a watcher is recording data correctly or for inspecting specific events.
+
+### Query explorer
+
+The Query explorer provides a browser-based editor where you can write and execute queries against your activity data using ActivityWatch's built-in query language. Results are displayed inline. This is useful for ad-hoc analysis and for testing queries before using them via the REST API.
+
+See the [query guide](/usage/query) for details on the query language and example queries.
+
+## Selecting time ranges
+
+Use the calendar picker in the top navigation to browse historical days. Click the left and right arrows to move one day at a time, or click the date itself to open a calendar and jump to any past date.
+
+Some views also support week and month aggregate modes, which roll up your data across multiple days so you can identify longer-term patterns in your usage.
+
+## Exporting data
+
+Each bucket page includes an **Export** button that downloads all events from that bucket as a JSON file. The exported file contains every event with its:
+
+- `timestamp` — ISO 8601 start time of the event
+- `duration` — length of the event in seconds
+- `data` — metadata object (e.g., `{"app": "Firefox", "title": "ActivityWatch — Firefox"}`)
+
+You can also export data programmatically via the REST API. See the [API overview](/developer/api-overview) for details.
+
+<CardGroup cols={2}>
+  <Card title="Categories" icon="tag" href="/usage/categories">
+    Set up category rules to classify your app usage automatically.
+  </Card>
+  <Card title="Query explorer" icon="terminal" href="/usage/query">
+    Write queries to filter, merge, and aggregate your activity data.
+  </Card>
+</CardGroup>

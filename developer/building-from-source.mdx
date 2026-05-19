@@ -1,0 +1,118 @@
+---
+title: "Build ActivityWatch from Source"
+description: "Clone ActivityWatch with Git submodules, set up a Python virtualenv, run make build, and start the full suite locally on Windows, macOS, or Linux."
+---
+
+Building ActivityWatch from source gives you the latest code and lets you modify any component. The build process uses Make to orchestrate building all submodules.
+
+## Prerequisites
+
+- **Python 3.8+** — verify with `python3 --version`
+- **Git** — for cloning with submodules
+- **Make** — GNU Make 4+
+- **Node.js 16+** — required to build the web UI (`aw-webui`)
+- **pip / poetry** — Python package management
+
+## Clone the repository
+
+```bash
+git clone --recursive https://github.com/ActivityWatch/activitywatch.git
+cd activitywatch
+```
+
+If you already cloned without `--recursive`, initialize submodules:
+
+```bash
+git submodule update --init --recursive
+```
+
+## Set up a virtual environment
+
+<Tabs>
+  <Tab title="Linux / macOS">
+    ```bash
+    python3 -m venv venv
+    source venv/bin/activate
+    ```
+  </Tab>
+  <Tab title="Windows">
+    ```powershell
+    python -m venv venv
+    venv\Scripts\activate
+    ```
+  </Tab>
+</Tabs>
+
+## Build all components
+
+```bash
+pip install 'setuptools>49.1.1'
+make build
+```
+
+This installs and builds all submodules in order: `aw-core`, `aw-client`, `aw-qt`, `aw-server`, `aw-server-rust`, `aw-watcher-afk`, and `aw-watcher-window`. It also builds the web UI bundled with `aw-server`.
+
+<Note>
+The build step compiles the Rust components (`aw-server-rust`) if Rust is installed. To skip it, set `SKIP_SERVER_RUST=true`:
+
+```bash
+SKIP_SERVER_RUST=true make build
+```
+</Note>
+
+## Run ActivityWatch
+
+```bash
+aw-qt
+```
+
+Or run the server directly without the tray manager:
+
+```bash
+python -m aw_server
+```
+
+## Update to latest
+
+Pull the latest changes and rebuild:
+
+```bash
+make update
+```
+
+This is equivalent to:
+
+```bash
+git pull
+git submodule update --init --recursive
+make build
+```
+
+## Build a distributable package
+
+```bash
+make package
+```
+
+Output appears in `dist/activitywatch/`. Platform-specific installers are produced by `scripts/package/package-all.sh`.
+
+## Skip optional components
+
+```bash
+# Skip aw-server-rust (saves time if Rust is not installed)
+SKIP_SERVER_RUST=true make build
+
+# Include optional extras (aw-notify, aw-watcher-input)
+AW_EXTRAS=true make build
+```
+
+## Cleaning builds
+
+```bash
+make clean        # Remove dist/ and build/
+make clean_all    # Also clean all submodule build artifacts
+```
+
+<Warning>
+`make clean_all` removes all built artifacts from every submodule. Run `make build` again to rebuild.
+</Warning>

@@ -1,0 +1,93 @@
+---
+title: "ActivityWatch Privacy: Your Data Stays Local"
+description: "ActivityWatch stores all activity data on your local machine. No data is sent to external servers, no accounts are required, and you control everything."
+---
+
+ActivityWatch is designed from the ground up with privacy in mind. All data is stored locally in a SQLite database on your machine and never transmitted to any server. There are no accounts, no telemetry, and no cloud dependency of any kind. You choose which watchers to run, you control how much data is collected, and you can inspect, export, or delete every record at any time through the web dashboard or the REST API.
+
+## What data is collected
+
+ActivityWatch collects only the data produced by the watchers you choose to run. The two watchers included in the default installation record:
+
+- **Active application name and window title** — `aw-watcher-window` periodically records which application is in the foreground and the title of its active window. You can disable title recording with `exclude_title = true` in the watcher config.
+- **AFK / active status** — `aw-watcher-afk` derives your active or away-from-keyboard status from the presence of keyboard and mouse input. It does **not** record which keys were pressed or the position of the mouse — only whether input occurred within a configurable time window.
+- **Browser tab URL and title** — if you install the optional `aw-watcher-web` browser extension, it records the URL and title of the active browser tab. This watcher is not installed by default; you must add it explicitly.
+- **Any other data tracked by additional watchers** — ActivityWatch is extensible. Third-party watchers can track editor activity, meeting presence, terminal sessions, and more. Each watcher you install expands the scope of what is recorded, so review any watcher before installing it.
+
+## What data is NOT collected
+
+Regardless of which watchers are running, ActivityWatch does not collect the following:
+
+- **Keystrokes or typed content** — `aw-watcher-afk` detects input activity but does not log what you type. No keystroke logger is included in any default watcher.
+- **Screenshots** — no built-in watcher captures screen content or images.
+- **Mouse positions or click coordinates** — cursor position and click locations are never recorded.
+- **Data transmitted to ActivityWatch developers or third parties** — nothing leaves your machine. There is no analytics endpoint, no crash reporter that sends data externally, and no usage tracking of any kind.
+
+## Where data is stored
+
+All activity data is stored in a local database managed by `aw-server`. The default storage location mirrors the configuration directory structure:
+
+<Tabs>
+  <Tab title="Windows">
+    ```
+    %APPDATA%\activitywatch\aw-server\
+    ```
+  </Tab>
+  <Tab title="macOS">
+    ```
+    ~/Library/Application Support/activitywatch/aw-server/
+    ```
+  </Tab>
+  <Tab title="Linux">
+    ```
+    ~/.local/share/activitywatch/aw-server/
+    ```
+  </Tab>
+</Tabs>
+
+The storage format depends on the backend configured in `aw-server.toml`:
+
+- **`peewee`** (default) — data is stored in a SQLite database file via the peewee ORM. SQLite is a single-file, self-contained database that you can open with any standard SQLite tool.
+- **`memory`** — data is kept in RAM only and lost when the server stops. This backend is intended for testing and development.
+
+You can export all data as JSON from the dashboard's **Raw Data** view, or download individual bucket exports via the REST API.
+
+## Network access
+
+`aw-server` binds exclusively to `localhost` (`127.0.0.1`) by default. This means:
+
+- The REST API and web dashboard are only accessible from your own machine.
+- No firewall rule changes are needed during normal use.
+- Other devices on your network cannot reach the ActivityWatch API unless you explicitly change the `host` setting.
+
+<Warning>
+  If you change the `host` setting to `0.0.0.0` in `aw-server.toml`, the API becomes accessible to any device on your local network. The REST API has no authentication by default. Only bind to a non-localhost address if you understand the implications and have appropriate network controls in place.
+</Warning>
+
+## Data deletion
+
+You have several options for removing activity data:
+
+- **Delete individual events** — use the **Raw Data** view in the dashboard to browse and delete specific events within any bucket.
+- **Delete entire buckets** — remove a complete bucket (and all its events) from the Raw Data view or by sending a `DELETE` request to the `/api/0/buckets/{bucket_id}` endpoint.
+- **Delete all data** — stop ActivityWatch, then delete the database directory for your platform (see [Where data is stored](#where-data-is-stored) above). The directory and a fresh database will be recreated on next start.
+
+## Responsible disclosure
+
+If you discover a security vulnerability in ActivityWatch, please report it by sending a PGP-encrypted email with details to [erik@bjareho.lt](mailto:erik@bjareho.lt). The project's full security policy, including the PGP key reference, is described in [SECURITY.md](https://github.com/ActivityWatch/activitywatch/blob/master/SECURITY.md) in the repository.
+
+<Tip>
+  To exclude window titles from storage — for example, to prevent email subject lines or document names from being recorded — set `exclude_title = true` in `aw-watcher-window/aw-watcher-window.toml`. Only the application name will be stored, not the window title.
+</Tip>
+
+<CardGroup cols={3}>
+  <Card title="Configuration" icon="sliders" href="/configuration">
+    Adjust watcher settings, server port, and storage location.
+  </Card>
+  <Card title="Sync" icon="arrows-rotate" href="/sync">
+    Learn how experimental device sync works and what data it moves.
+  </Card>
+  <Card title="REST API" icon="code" href="/developer/api-overview">
+    Use the REST API to export or delete data programmatically.
+  </Card>
+</CardGroup>

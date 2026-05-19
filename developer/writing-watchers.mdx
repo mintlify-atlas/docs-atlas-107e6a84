@@ -1,0 +1,91 @@
+---
+title: "Write a Custom ActivityWatch Watcher"
+description: "Build your own ActivityWatch watcher using the aw-client Python library to track any activity and send events to the local ActivityWatch server."
+---
+
+ActivityWatch's watcher system is open — any process that can send HTTP requests can act as a watcher. The Python `aw-client` library makes this straightforward with a high-level `ActivityWatchClient` class and heartbeat helpers.
+
+## Prerequisites
+
+- ActivityWatch running locally (server on port 5600)
+- Python 3.8+
+- `aw-client` installed: `pip install aw-client`
+
+## Minimal watcher example
+
+The following watcher polls every 5 seconds and reports the current time as a custom event:
+
+```python my_watcher.py
+import time
+from datetime import datetime, timezone
+from aw_client import ActivityWatchClient
+
+# Create client and connect to the local server
+client = ActivityWatchClient("my-custom-watcher", testing=False)
+
+# Define the bucket
+bucket_id = f"my-custom-watcher_{client.client_hostname}"
+event_type = "my.event.type"
+
+# Create the bucket (idempotent — safe to call on every start)
+client.create_bucket(bucket_id, event_type)
+
+poll_interval = 5  # seconds
+
+print(f"Watcher running. Sending events to bucket: {bucket_id}")
+
+while True:
+    now = datetime.now(timezone.utc)
+    data = {
+        "label": "my-activity",
+        "detail": "some detail about what is happening"
+    }
+    # Send a heartbeat — extends the current event if data is unchanged
+    client.heartbeat(bucket_id, {"timestamp": now, "duration": 0, "data": data}, pulsetime=poll_interval + 1)
+    time.sleep(poll_interval)
+```
+
+<Steps>
+  <Step title="Install aw-client">
+    ```bash
+    pip install aw-client
+    ```
+  </Step>
+  <Step title="Create an ActivityWatchClient">
+    Pass your watcher's name as the first argument. The client connects to `http://localhost:5600` by default.
+  </Step>
+  <Step title="Create a bucket">
+    Call `client.create_bucket(bucket_id, event_type)` on startup. This is idempotent — if the bucket already exists, nothing happens.
+  </Step>
+  <Step title="Send heartbeats in a loop">
+    Use `client.heartbeat()` with a `pulsetime` slightly larger than your poll interval so consecutive identical events get merged automatically.
+  </Step>
+</Steps>
+
+## Heartbeat vs. insert_events
+
+| Method | When to use |
+|---|---|
+| `client.heartbeat()` | Ongoing activity that changes infrequently — the server merges identical heartbeats |
+| `client.insert_events()` | Discrete historical events with known timestamps and durations |
+
+## Testing your watcher
+
+Use `testing=True` when creating the client — this connects to a separate test server instance on port `5666` and uses a `_testing` suffix on bucket IDs, keeping test data separate from real data.
+
+```python
+client = ActivityWatchClient("my-watcher", testing=True)
+```
+
+<Tip>
+Run `aw-server --testing` in a separate terminal to start a test server that won't interfere with your production data.
+</Tip>
+
+<CardGroup cols={2}>
+  <Card title="aw-client Reference" icon="python" href="/developer/aw-client">
+    Full API reference for the ActivityWatchClient class
+  </Card>
+  <Card title="Examples" icon="code" href="/developer/examples">
+    Real-world watcher examples from the community
+  </Card>
+</CardGroup>

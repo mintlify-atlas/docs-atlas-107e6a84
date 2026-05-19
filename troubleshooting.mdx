@@ -1,0 +1,99 @@
+---
+title: "Troubleshoot ActivityWatch Issues"
+description: "Diagnose and fix common ActivityWatch problems including missing data, watcher crashes, port conflicts, and macOS permission errors."
+---
+
+Most ActivityWatch issues fall into a few categories: the server is not running, a watcher lacks the permissions it needs, or there is a port conflict. This guide walks through each scenario step by step.
+
+## Check that ActivityWatch is running
+
+The system tray icon (from `aw-qt`) should be visible. Open `http://localhost:5600` in your browser — if the page doesn't load, the server isn't running.
+
+<Steps>
+  <Step title="Start ActivityWatch manually">
+    - **Windows / macOS:** Launch ActivityWatch from the Start Menu or Applications folder.
+    - **Linux:** Run `aw-qt` from the terminal, or `python -m aw_qt` if installed via pip.
+  </Step>
+  <Step title="Verify the server responds">
+    Open `http://localhost:5600/api/0/info` — a JSON response confirms the server is up.
+  </Step>
+</Steps>
+
+## Watcher not recording data
+
+Go to `http://localhost:5600` → **Buckets** and check whether a bucket for `aw-watcher-window` exists with recent events.
+
+<Tabs>
+  <Tab title="macOS">
+    Grant **Accessibility** permission: **System Settings → Privacy & Security → Accessibility → ActivityWatch**. On macOS 14+, you may also need **Screen Recording** permission.
+  </Tab>
+  <Tab title="Linux (X11)">
+    Install the required tools:
+    ```bash
+    sudo apt install xdotool   # Debian/Ubuntu
+    sudo dnf install xdotool   # Fedora
+    ```
+  </Tab>
+  <Tab title="Linux (Wayland)">
+    The standard `aw-watcher-window` does not support Wayland. Use the `awatcher` alternative, which is included in the Tauri-based build of ActivityWatch.
+  </Tab>
+  <Tab title="Windows">
+    Ensure ActivityWatch is not blocked by antivirus software. Run it as Administrator once to verify it can read the active window.
+  </Tab>
+</Tabs>
+
+## Port 5600 already in use
+
+Find what is using the port, then either stop that process or change ActivityWatch's port.
+
+```bash
+# Linux / macOS
+lsof -i :5600
+
+# Windows (PowerShell)
+netstat -ano | findstr :5600
+```
+
+To change the port, edit the config file:
+
+```toml ~/.config/activitywatch/aw-server/aw-server.toml
+[server]
+port = 5601
+```
+
+Restart ActivityWatch after saving.
+
+## Checking log files
+
+<Tabs>
+  <Tab title="Linux / macOS">
+    ```bash
+    ls ~/.local/share/activitywatch/log/
+    ```
+  </Tab>
+  <Tab title="Windows">
+    Open `%APPDATA%\activitywatch\log\` in File Explorer.
+  </Tab>
+</Tabs>
+
+Look for Python tracebacks or `PermissionError` messages, which usually indicate a missing system permission or a locked database file.
+
+## Data appears missing or incomplete
+
+- Verify the **date selector** in the dashboard shows the correct day.
+- Check that the watcher bucket has events for that period.
+- The **AFK filter** in the Activity view may be hiding idle time — toggle it off to see all events.
+
+## Getting help
+
+<CardGroup cols={3}>
+  <Card title="Forum" icon="comments" href="https://forum.activitywatch.net">
+    Post questions and search existing threads
+  </Card>
+  <Card title="Discord" icon="discord" href="https://discord.gg/vDskV9q">
+    Real-time chat with the community
+  </Card>
+  <Card title="GitHub Issues" icon="github" href="https://github.com/ActivityWatch/activitywatch/issues">
+    Report bugs with the issue template
+  </Card>
+</CardGroup>

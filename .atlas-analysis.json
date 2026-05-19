@@ -1,0 +1,110 @@
+{
+  "projectType": "saas",
+  "projectName": "ActivityWatch",
+  "projectDescription": "The best free and open-source automated time tracker — cross-platform, extensible, and privacy-focused, storing all data locally on your machine.",
+  "theme": "almond",
+  "primaryColor": "#7c7c7c",
+  "lightColor": "#0f0f0f",
+  "darkColor": "#c8c8c8",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "getting-started",
+              "installation"
+            ]
+          },
+          {
+            "group": "Using ActivityWatch",
+            "pages": [
+              "usage/dashboard",
+              "usage/watchers",
+              "usage/categories",
+              "usage/query"
+            ]
+          },
+          {
+            "group": "Configuration & Privacy",
+            "pages": [
+              "configuration",
+              "privacy",
+              "sync"
+            ]
+          },
+          {
+            "group": "Troubleshooting",
+            "pages": [
+              "faq",
+              "troubleshooting"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Developer Guide",
+        "groups": [
+          {
+            "group": "Architecture",
+            "pages": [
+              "developer/architecture",
+              "developer/data-model"
+            ]
+          },
+          {
+            "group": "REST API",
+            "pages": [
+              "developer/api-overview",
+              "developer/api-buckets",
+              "developer/api-events",
+              "developer/api-query"
+            ]
+          },
+          {
+            "group": "Building Watchers",
+            "pages": [
+              "developer/writing-watchers",
+              "developer/aw-client",
+              "developer/examples"
+            ]
+          },
+          {
+            "group": "Contributing",
+            "pages": [
+              "developer/contributing",
+              "developer/building-from-source"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Automatic time tracking across applications, windows, and browser tabs",
+    "AFK (Away From Keyboard) detection via keyboard and mouse monitoring",
+    "Privacy-first: all data stored locally on the user's machine",
+    "Cross-platform support: Windows, macOS, Linux, and Android",
+    "Extensible watcher system for tracking custom activity types",
+    "Rich web dashboard with timeline, activity summaries, and category breakdowns",
+    "REST API for programmatic access and custom integrations",
+    "Query scripting language for filtering, merging, and transforming event data",
+    "Browser extension for tracking web browsing activity",
+    "Sync support via external tools (Syncthing, Dropbox, etc.)"
+  ],
+  "publicApiSurface": [
+    "GET /api/0/buckets/ — List all buckets",
+    "POST /api/0/buckets/{bucket_id} — Create a bucket",
+    "GET /api/0/buckets/{bucket_id}/events — Get events from a bucket",
+    "POST /api/0/buckets/{bucket_id}/events — Insert events into a bucket",
+    "POST /api/0/buckets/{bucket_id}/heartbeat — Send a heartbeat to update current state",
+    "POST /api/0/query/ — Execute a query against stored events",
+    "GET /api/0/info — Get server metadata and version info",
+    "aw_client.ActivityWatchClient — Python client library for interacting with the server",
+    "aw_core.models.Event — Core event data model (timestamp, duration, data)",
+    "aw_core.models.Bucket — Bucket metadata model (id, type, client, hostname)"
+  ]
+}

@@ -1,0 +1,91 @@
+---
+title: "ActivityWatch Architecture Overview"
+description: "How ActivityWatch components fit together: aw-server, aw-qt, watchers, aw-webui, and aw-client use a local REST API to record and visualize your activity data."
+---
+
+ActivityWatch is built as a set of loosely coupled components communicating over a local REST API. Understanding this architecture is essential before building custom watchers or integrations.
+
+## Components
+
+ActivityWatch has two server implementations that share the same REST API:
+
+- **aw-server** (Python) — the current default, built with Flask
+- **aw-server-rust** — a Rust implementation that is the planned future default; also provides `aw-sync`
+
+Both servers store event data in buckets and serve the web UI.
+
+### Watchers (data collectors)
+
+Watchers are standalone processes that send heartbeat events to aw-server:
+
+| Watcher | Language | What it tracks |
+|---|---|---|
+| aw-watcher-window | Python | Active application and window title |
+| aw-watcher-afk | Python | Keyboard/mouse activity (AFK detection) |
+| aw-watcher-web | JavaScript | Active browser tab URL and title |
+| awatcher | Rust | Active window on Linux Wayland |
+| aw-watcher-input | Python | Detailed keyboard/mouse input metrics |
+
+### Supporting components
+
+- **aw-qt** — system tray manager; launches and manages aw-server and the built-in watchers
+- **aw-core** — shared Python library (models, config, logging, storage backends)
+- **aw-client** — Python client library for the REST API; used by all Python watchers
+- **aw-webui** — Vue.js frontend served by aw-server on port 5600
+- **aw-notify** — Rust daemon that queries aw-server and sends desktop notifications
+
+## Data flow
+
+```
+aw-qt
+  ├── manages → aw-server (port 5600)
+  │               ├── stores events in SQLite via aw-core
+  │               └── serves aw-webui
+  ├── manages → aw-watcher-window → heartbeats → aw-server
+  └── manages → aw-watcher-afk   → heartbeats → aw-server
+
+Browser extension → aw-watcher-web → heartbeats → aw-server
+
+aw-sync ↔ sync folder ↔ (Syncthing/Dropbox) ↔ remote aw-sync
+```
+
+## Communication pattern
+
+All components communicate with aw-server via its REST API on `http://localhost:5600/api/0/`. Watchers use the heartbeat endpoint to send periodic state updates. The server merges consecutive heartbeats with the same data into a single event, controlled by the `pulsetime` parameter.
+
+<Note>
+aw-client (Python) wraps the REST API for convenience. Any language with HTTP support can interact with aw-server directly.
+</Note>
+
+## Repository structure
+
+The main `activitywatch` repository is a meta-package that bundles all components as git submodules:
+
+```
+activitywatch/
+├── aw-core/          # Shared Python library
+├── aw-client/        # Python client library
+├── aw-server/        # Python server
+├── aw-server-rust/   # Rust server + aw-sync
+├── aw-watcher-afk/   # AFK watcher
+├── aw-watcher-window/# Window watcher
+├── aw-watcher-input/ # Input watcher
+├── aw-qt/            # System tray / process manager
+├── aw-tauri/         # Tauri desktop app wrapper
+└── awatcher/         # Rust window watcher (Wayland)
+```
+
+<CardGroup cols={2}>
+  <Card title="Data Model" icon="database" href="/developer/data-model">
+    Understand buckets and events — the core data structures
+  </Card>
+  <Card title="REST API" icon="code" href="/developer/api-overview">
+    Explore all available API endpoints
+  </Card>
+  <Card title="Writing Watchers" icon="plug" href="/developer/writing-watchers">
+    Build your own watcher using aw-client
+  </Card>
+  <Card title="Contributing" icon="github" href="/developer/contributing">
+    Set up the development environment
+  </Card>
+</CardGroup>
